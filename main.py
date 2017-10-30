@@ -10,9 +10,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://build-a-blog:buildablog
 app.config['SQLALCHEMY_ECHO'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app) # pylint: disable=locally-disabled, invalid-name
-
-#create secret key
-#app.secret_key = sdfasdfasdf
+app.secret_key = 'sdfasdfasdf'
 
 
 ##### Classes ####
@@ -44,19 +42,20 @@ def newpost():
     if request.method == 'POST':
         entry_name = request.form['name']
         entry_text = request.form['text']
-        new_entry = Entry(entry_name, entry_text)
-        db.session.add(new_entry)
-        db.session.commit()
-        entry_id = new_entry.id
-        return redirect('/blog')
-        #return redirect('/view-post?id=' + entry_id)
+        if entry_name == '' or entry_text == '':
+            flash('Your blog post must have a title and body', 'error')
+            return redirect('/newpost')
+        else: 
+            new_entry = Entry(entry_name, entry_text)
+            db.session.add(new_entry)
+            db.session.commit()
+            entry_id = new_entry.id
+            return redirect('/blog')
     return render_template('newpost.html')
 
 
 @app.route('/view-post')
 def view_post():
-    # TODO: 
-    # Use get request to select correct post
     entry_id = request.args.get('id')
     entry_veiw = Entry.query.filter_by(id=entry_id).first()
     name = entry_veiw.name
